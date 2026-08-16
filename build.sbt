@@ -11,9 +11,6 @@ libraryDependencies += "org.typelevel" %% "cats-core" % "2.13.0"
 libraryDependencies += "org.typelevel" %% "cats-effect" % "3.7.0"
 libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.6.2"
 libraryDependencies += "org.http4s" %% "http4s-scalatags" % "0.25.3"
+libraryDependencies += "com.google.cloud" % "google-cloud-firestore" % "3.45.0"
 
 scalacOptions ++= Seq("-Werror")
-
-fork := true
-run / fork := true
-Global / cancelable := true

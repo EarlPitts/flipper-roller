@@ -110,3 +110,11 @@ enum Flipper:
   case Waiting(name: Name)
   case InProgress(name: Name)
   case Done(name: Name)
+
+object Flipper:
+  def fromDTO(dto: FlipperDTO): Option[Flipper] =
+    Name
+      .mkName(dto.name)
+      .map(Waiting(_))
+
+case class FlipperDTO(name: String, status: String)

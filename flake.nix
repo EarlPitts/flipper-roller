@@ -27,6 +27,7 @@
 
             # Misc
             sqlite
+            google-cloud-sdk
           ];
         };
       }

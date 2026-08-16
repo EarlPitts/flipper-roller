@@ -3,22 +3,53 @@ package flipper.db
 import cats.effect.*
 import cats.*
 import cats.implicits.*
+import com.google.cloud.firestore.{Firestore, FirestoreOptions}
 
 import flipper.web.Flipper.*
-import flipper.web.Flipper
+import flipper.web.*
+
+import scala.jdk.CollectionConverters.*
+import flipper.web.Name
+
+case class DbConfig(projectId: String)
 
 trait Db:
   def addFlipper(flipper: Flipper): IO[Unit]
   def getFlippers: IO[List[Flipper]]
 
 object Db:
-  def make: Resource[IO, Db] =
-    Resource.make(init)(_ => IO.unit)
+  def make(config: DbConfig): Resource[IO, Db] =
+    Resource
+      .fromAutoCloseable {
+        IO.blocking(
+          FirestoreOptions.getDefaultInstance.toBuilder
+            .setProjectId(config.projectId)
+            .build()
+            .getService
+        )
+      }
+      .map { store =>
+        new Db {
+          def getFlippers =
+            IO.blocking(store.collection("flippers").get().get())
+              .map {
+                _.getDocuments.asScala.toList
+                  .map { doc =>
+                    val name = doc.getString("name") // TODO handle error
+                    val status = doc.getString("status") // TODO handle error
+                    val dto = FlipperDTO(name, status)
+                    Flipper.fromDTO(dto).get // TODO handle error
+                  }
+              }
 
-  def init: IO[Db] =
-    Ref[IO].of(List.empty[Flipper]).flatMap { flippersRef =>
-      new Db {
-        def getFlippers = flippersRef.get
-        def addFlipper(flipper: Flipper) = flippersRef.update(flipper :: _)
-      }.pure[IO]
-    }
+          def addFlipper(flipper: Flipper) = flipper match
+            case Done(name)    => ???
+            case Waiting(name) =>
+              IO.blocking(
+                store
+                  .collection("flippers")
+                  .add(Map("name" -> name.unName, "status" -> "waiting").asJava)
+              )
+            case InProgress(name) => ???
+        }
+      }
