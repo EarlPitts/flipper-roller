@@ -16,6 +16,7 @@ trait Db:
   def addFlipper(flipper: Flipper): IO[Unit]
   def getFlippers: IO[List[Flipper]]
   def deleteAll: IO[Unit]
+  def delete(name: Name): IO[Unit]
 
 object Db:
   def make(config: DbConfig): Resource[IO, Db] =
@@ -57,13 +58,26 @@ object Db:
             val documents =
               store
                 .collection("flippers")
-                .get()
-                .get()
+                .get
+                .get
                 .getDocuments
                 .asScala
                 .toList
-            documents.foreach(_.getReference.delete().get())
+            documents.foreach(_.getReference.delete.get())
+          }
+
+          def delete(name: Name) = IO.blocking {
+            val documents =
+              store
+                .collection("flippers")
+                .get
+                .get
+                .getDocuments
+                .asScala
+                .toList
+            documents
+              .find(_.getString("name") == name.unName)
+              .map(_.getReference.delete.get)
           }
         }
-
       }

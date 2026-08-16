@@ -54,5 +54,15 @@ def httpApp(db: Db) = Router {
           .flatMap { flippers =>
             Ok(template("Flipper Roller", flippersView(flippers)))
           }
+
+    case DELETE -> Root / nameStr =>
+      Name.mkName(nameStr) match
+        case None       => BadRequest()
+        case Some(name) =>
+          db.delete(name) >>
+            db.getFlippers
+              .flatMap { flippers =>
+                Ok(template("Flipper Roller", flippersView(flippers)))
+              }
   }
 }.orNotFound
