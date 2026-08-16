@@ -14,6 +14,6 @@ implicit val loggerFactory: LoggerFactory[IO] = Slf4jFactory.create[IO]
 
 object Main extends ResourceApp.Forever:
   def run(args: List[String]) =
-    Db.make().flatMap { db =>
+    Db.make.flatMap { db =>
       Web.make(db).void
     }

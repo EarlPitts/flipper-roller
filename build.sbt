@@ -13,3 +13,7 @@ libraryDependencies += "ch.qos.logback" % "logback-classic" % "1.6.2"
 libraryDependencies += "org.http4s" %% "http4s-scalatags" % "0.25.3"
 
 scalacOptions ++= Seq("-Werror")
+
+fork := true
+run / fork := true
+Global / cancelable := true
