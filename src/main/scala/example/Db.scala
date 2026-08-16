@@ -49,6 +49,7 @@ object Db:
                 store
                   .collection("flippers")
                   .add(Map("name" -> name.unName, "status" -> "waiting").asJava)
+                  .get
               )
             case InProgress(name) => ???
 
