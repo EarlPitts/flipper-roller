@@ -1,0 +1,56 @@
+package flipper.web.view
+
+import scalatags.Text.all.*
+import org.http4s.scalatags.*
+import scalatags.Text.TypedTag
+
+import flipper.core.Flipper
+import flipper.core.Flipper.*
+
+val hxGet = attr("hx-get")
+val hxPost = attr("hx-post")
+val hxTarget = attr("hx-target")
+val hxSwap = attr("hx-swap")
+val hxTrigger = attr("hx-trigger")
+
+def template(t: String, content: TypedTag[String]) = html(
+  head(
+    // TODO figure out title
+    // script(src := "..."),
+    script(
+      src := "https://cdn.jsdelivr.net/npm/htmx.org@2.0.10/dist/htmx.min.js",
+      integrity := "sha384-H5SrcfygHmAuTDZphMHqBJLc3FhssKjG7w/CeCpFReSfwBWDTKpkzPP8c+cLsK+V",
+      crossorigin := "anonymous"
+    )
+    // script(
+    //   "alert('Hello World')"
+    // )
+  ),
+  body(content)
+)
+
+def mainView(flippers: List[Flipper]) = div(
+  h1(id := "title", "Flipper Roller"),
+  form(
+    hxPost := "/",
+    hxTarget := "#flippers",
+    hxSwap := "outerHTML",
+  )(
+    input(`type` := "text", name := "name"),
+    button(`type` := "submit")("Add")
+  ),
+  flippersView(flippers)
+)
+
+def flippersView(flippers: List[Flipper]) = div(id := "flippers")(
+  flippers.map(flipperView)
+)
+
+def flipperView(flipper: Flipper) = div(
+  flipper match {
+    case Waiting(name)    => span(name.unName, " ", "Waiting")
+    case InProgress(name) => span(name.unName, " ", "In Progress")
+    case Done(name)       => span(name.unName, " ", "Done")
+  }
+)
+

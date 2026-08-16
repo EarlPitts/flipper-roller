@@ -5,11 +5,10 @@ import cats.*
 import cats.implicits.*
 import com.google.cloud.firestore.{Firestore, FirestoreOptions}
 
-import flipper.web.Flipper.*
-import flipper.web.*
+import flipper.core.Flipper.*
+import flipper.core.*
 
 import scala.jdk.CollectionConverters.*
-import flipper.web.Name
 
 case class DbConfig(projectId: String)
 
