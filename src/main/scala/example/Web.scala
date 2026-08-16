@@ -47,5 +47,12 @@ def httpApp(db: Db) = Router {
               resp <- Ok(template("Flipper Roller", flippersView(flippers)))
             } yield resp
       }
+
+    case DELETE -> Root =>
+      db.deleteAll >>
+        db.getFlippers
+          .flatMap { flippers =>
+            Ok(template("Flipper Roller", flippersView(flippers)))
+          }
   }
 }.orNotFound

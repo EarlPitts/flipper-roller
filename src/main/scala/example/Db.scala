@@ -15,6 +15,7 @@ case class DbConfig(projectId: String)
 trait Db:
   def addFlipper(flipper: Flipper): IO[Unit]
   def getFlippers: IO[List[Flipper]]
+  def deleteAll: IO[Unit]
 
 object Db:
   def make(config: DbConfig): Resource[IO, Db] =
@@ -50,5 +51,18 @@ object Db:
                   .add(Map("name" -> name.unName, "status" -> "waiting").asJava)
               )
             case InProgress(name) => ???
+
+          def deleteAll = IO.blocking {
+            val documents =
+              store
+                .collection("flippers")
+                .get()
+                .get()
+                .getDocuments
+                .asScala
+                .toList
+            documents.foreach(_.getReference.delete().get())
+          }
         }
+
       }

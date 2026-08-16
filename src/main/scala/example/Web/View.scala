@@ -9,6 +9,7 @@ import flipper.core.Flipper.*
 
 val hxGet = attr("hx-get")
 val hxPost = attr("hx-post")
+val hxDelete = attr("hx-delete")
 val hxTarget = attr("hx-target")
 val hxSwap = attr("hx-swap")
 val hxTrigger = attr("hx-trigger")
@@ -31,13 +32,20 @@ def template(t: String, content: TypedTag[String]) = html(
 
 def mainView(flippers: List[Flipper]) = div(
   h1(id := "title", "Flipper Roller"),
-  form(
-    hxPost := "/",
-    hxTarget := "#flippers",
-    hxSwap := "outerHTML",
-  )(
-    input(`type` := "text", name := "name"),
-    button(`type` := "submit")("Add")
+  span(
+    form(
+      hxPost := "/",
+      hxTarget := "#flippers",
+      hxSwap := "outerHTML"
+    )(
+      input(`type` := "text", name := "name"),
+      button(`type` := "submit")("Add")
+    ),
+    button(
+      hxDelete := "/",
+      hxTarget := "#flippers",
+      hxSwap := "outerHTML"
+    )("Delete All")
   ),
   flippersView(flippers)
 )
@@ -53,4 +61,3 @@ def flipperView(flipper: Flipper) = div(
     case Done(name)       => span(name.unName, " ", "Done")
   }
 )
-
