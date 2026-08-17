@@ -54,43 +54,22 @@ def flippersView(flippers: List[Flipper]) = div(id := "flippers")(
   flippers.map(flipperView)
 )
 
-def flipperView(flipper: Flipper) = div(
-  flipper match {
-    case Waiting(name) =>
-      span(
-        name.unName,
-        " ",
-        "Waiting",
-        " ",
-        button(
-          hxDelete := s"/${name.unName}",
-          hxTarget := "#flippers",
-          hxSwap := "outerHTML"
-        )("Delete")
-      )
-    case InProgress(name) =>
-      span(
-        name.unName,
-        " ",
-        "In Progress",
-        " ",
-        button(
-          hxDelete := s"/${name.unName}",
-          hxTarget := "#flippers",
-          hxSwap := "outerHTML"
-        )("Delete")
-      )
-    case Done(name) =>
-      span(
-        name.unName,
-        " ",
-        "Done",
-        " ",
-        button(
-          hxDelete := s"/${name.unName}",
-          hxTarget := "#flippers",
-          hxSwap := "outerHTML"
-        )("Delete")
-      )
-  }
-)
+def flipperView(flipper: Flipper) =
+  def rowView(name: String, status: String) = span(
+    name,
+    " ",
+    status,
+    " ",
+    button(
+      hxDelete := s"/$name",
+      hxTarget := "#flippers",
+      hxSwap := "outerHTML"
+    )("Delete")
+  )
+  div(
+    flipper match {
+      case Waiting(name)    => rowView(name.unName, "Waiting")
+      case InProgress(name) => rowView(name.unName, "In Progress")
+      case Done(name)       => rowView(name.unName, "Done")
+    }
+  )
