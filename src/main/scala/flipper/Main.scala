@@ -24,8 +24,10 @@ object Main extends ResourceApp.Forever:
     val dayTime = DayTime(List(DayOfWeek.MONDAY), LocalTime.parse("08:12"))
     val job = Job(dayTime, IO.println("Hello from job"))
 
-    schedule(tz, Clock[IO].realTimeInstant, job).flatMap { _ =>
-      Db.make(dbConfig).flatMap { db =>
-        Web.make(db).void
+    Resource.eval(LoggerFactory[IO].create).flatMap { implicit logger =>
+      schedule(tz, Clock[IO].realTimeInstant, job).flatMap { _ =>
+        Db.make(dbConfig).flatMap { db =>
+          Web.make(db).void
+        }
       }
     }

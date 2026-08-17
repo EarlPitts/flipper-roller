@@ -8,6 +8,7 @@ import cats.effect.*
 import cats.effect.implicits.*
 import cats.*
 import cats.implicits.*
+import org.typelevel.log4cats.Logger
 
 case class Job(time: DayTime, action: IO[Unit])
 
@@ -17,14 +18,12 @@ def schedule(
     tz: ZoneId,
     getTime: IO[Instant],
     job: Job
-): Resource[IO, IO[OutcomeIO[Unit]]] =
+)(implicit logger: Logger[IO]): Resource[IO, IO[OutcomeIO[Unit]]] =
   val loop: IO[Unit] = (for
     now <- getTime
     delay = getDelay(tz, now, job.time).toScala
-    _ <- IO.println(delay)
     _ <- IO.whenA(delay > Duration.ZERO.toScala) {
-      // TODO log
-      IO.println(s"Scheduled in: ${delay.toMinutes}") >>
+      logger.info(s"Scheduled in: ${delay.toMinutes}") >>
         IO.sleep(delay) >> job.action
     }
   yield ()).foreverM
