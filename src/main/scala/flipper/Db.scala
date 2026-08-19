@@ -4,11 +4,10 @@ import cats.effect.*
 import cats.*
 import cats.implicits.*
 import com.google.cloud.firestore.{Firestore, FirestoreOptions}
+import scala.jdk.CollectionConverters.*
 
 import flipper.core.Flipper.*
 import flipper.core.*
-
-import scala.jdk.CollectionConverters.*
 
 case class DbConfig(projectId: String)
 
@@ -30,9 +29,10 @@ object Db:
         )
       }
       .map { store =>
+        val collection = store.collection("flippers")
         new Db {
           def getFlippers =
-            IO.blocking(store.collection("flippers").get().get())
+            IO.blocking(collection.get().get())
               .map {
                 _.getDocuments.asScala.toList
                   .map { doc =>
@@ -43,38 +43,22 @@ object Db:
                   }
               }
 
-          def addFlipper(flipper: Flipper) = flipper match
-            case Done(name)    => ???
-            case Waiting(name) =>
-              IO.blocking(
-                store
-                  .collection("flippers")
-                  .add(Map("name" -> name.unName, "status" -> "waiting").asJava)
-                  .get
-              )
-            case InProgress(name) => ???
+          def addFlipper(flipper: Flipper) =
+            IO.blocking(
+              collection
+                .add(Flipper.toDTO(flipper))
+                .get
+            )
 
           def deleteAll = IO.blocking {
             val documents =
-              store
-                .collection("flippers")
-                .get
-                .get
-                .getDocuments
-                .asScala
-                .toList
+              collection.get.get.getDocuments.asScala.toList
             documents.foreach(_.getReference.delete.get())
           }
 
           def delete(name: Name) = IO.blocking {
             val documents =
-              store
-                .collection("flippers")
-                .get
-                .get
-                .getDocuments
-                .asScala
-                .toList
+              collection("flippers").get.get.getDocuments.asScala.toList
             documents
               .find(_.getString("name") == name.unName)
               .map(_.getReference.delete.get)
