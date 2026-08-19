@@ -39,6 +39,7 @@ def mainView(flippers: List[Flipper]) = div(
       hxSwap := "outerHTML"
     )(
       input(`type` := "text", name := "name"),
+      input(`type` := "date", name := "date"),
       button(`type` := "submit")("Add")
     ),
     button(
@@ -68,8 +69,8 @@ def flipperView(flipper: Flipper) =
   )
   div(
     flipper match {
-      case Waiting(name)    => rowView(name.unName, "Waiting")
-      case InProgress(name) => rowView(name.unName, "In Progress")
-      case Done(name)       => rowView(name.unName, "Done")
+      case Waiting(name, _)    => rowView(name.unName, "Waiting")
+      case InProgress(name, _) => rowView(name.unName, "In Progress")
+      case Done(name, _)       => rowView(name.unName, "Done")
     }
   )

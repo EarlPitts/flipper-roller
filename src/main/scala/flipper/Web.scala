@@ -18,6 +18,7 @@ import flipper.core.*
 import flipper.core.Flipper.*
 import flipper.web.view.*
 import flipper.db.*
+import java.time.LocalDate
 
 object Web:
   def make(db: Db)(implicit logger: Logger[IO]): Resource[IO, Server] =
@@ -35,20 +36,28 @@ def httpApp(db: Db)(implicit logger: Logger[IO]) = Router {
         .flatMap { flippers =>
           Ok(template("Flipper Roller", mainView(flippers)))
         }
+        .onError(logger.error(_)("Error while gettig flippers"))
 
     case req @ POST -> Root =>
-      req.as[UrlForm].flatMap { form =>
-        val mName = form.getFirst("name").flatMap(Name.mkName)
-        mName match
-          case None       => BadRequest("Invalid name")
-          case Some(name) =>
-            val flipper = Waiting(name)
-            for {
-              _ <- logger.info(s"Adding flipper $flipper")
-              _ <- db.addFlipper(flipper)
-              flippers <- db.getFlippers
-              resp <- Ok(flippersView(flippers))
-            } yield resp
+      IO.blocking(LocalDate.now).flatMap { currDate =>
+        req
+          .as[UrlForm]
+          .flatMap { form =>
+            val name = form.getFirst("name")
+            val date = form.getFirst("date")
+            val flipperDTO = (name, date).mapN(CreateFlipperDTO.apply)
+            val flipper = flipperDTO.flatMap(Flipper.fromCreateDTO(currDate))
+            flipper match
+              case Some(flipper) =>
+                for {
+                  _ <- logger.info(s"Adding flipper $flipper")
+                  _ <- db.addFlipper(flipper)
+                  flippers <- db.getFlippers
+                  resp <- Ok(flippersView(flippers))
+                } yield resp
+              case None => BadRequest("Invalid name or date")
+          }
+          .onError(logger.error(_)("Error while adding flipper"))
       }
 
     case DELETE -> Root =>
@@ -58,6 +67,7 @@ def httpApp(db: Db)(implicit logger: Logger[IO]) = Router {
           .flatMap { flippers =>
             Ok(flippersView(flippers))
           }
+          .onError(logger.error(_)("Error while deleting flippers"))
 
     case DELETE -> Root / nameStr =>
       Name.mkName(nameStr) match
@@ -69,5 +79,6 @@ def httpApp(db: Db)(implicit logger: Logger[IO]) = Router {
               .flatMap { flippers =>
                 Ok(flippersView(flippers))
               }
+              .onError(logger.error(_)("Error while deleting flipper"))
   }
 }.orNotFound

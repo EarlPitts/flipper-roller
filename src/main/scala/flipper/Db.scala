@@ -38,17 +38,14 @@ object Db:
                   .map { doc =>
                     val name = doc.getString("name") // TODO handle error
                     val status = doc.getString("status") // TODO handle error
-                    val dto = FlipperDTO(name, status)
+                    val date = doc.getString("date") // TODO handle error
+                    val dto = FlipperDTO(name, status, date)
                     Flipper.fromDTO(dto).get // TODO handle error
                   }
               }
 
           def addFlipper(flipper: Flipper) =
-            IO.blocking(
-              collection
-                .add(Flipper.toDTO(flipper))
-                .get
-            )
+            IO.blocking(collection.add(Flipper.toDTO(flipper)).get).void
 
           def deleteAll = IO.blocking {
             val documents =
@@ -58,10 +55,10 @@ object Db:
 
           def delete(name: Name) = IO.blocking {
             val documents =
-              collection("flippers").get.get.getDocuments.asScala.toList
+              collection.get.get.getDocuments.asScala.toList
             documents
               .find(_.getString("name") == name.unName)
               .map(_.getReference.delete.get)
-          }
+          }.void
         }
       }
