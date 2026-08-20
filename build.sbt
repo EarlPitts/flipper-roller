@@ -12,6 +12,7 @@ libraryDependencies += "org.typelevel" %% "cats-effect" % "3.7.0"
 libraryDependencies += "org.slf4j" % "slf4j-simple" % "2.0.18"
 libraryDependencies += "org.http4s" %% "http4s-scalatags" % "0.25.3"
 libraryDependencies += "com.google.cloud" % "google-cloud-firestore" % "3.45.0"
+libraryDependencies += "is.cir" %% "ciris" % "3.15.0"
 
 scalacOptions ++= Seq(
   "-deprecation",
